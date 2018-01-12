@@ -32,8 +32,8 @@ var bot = new builder.UniversalBot(connector);
 
 // Register in-memory storage
 //
-//var inMemoryStorage = new builder.MemoryBotStorage();
-//bot.set('storage', inMemoryStorage); 
+// var inMemoryStorage = new builder.MemoryBotStorage();
+// bot.set('storage', inMemoryStorage); 
 
 // Register table storage
 //
@@ -61,7 +61,7 @@ bot.dialog('setup', [
 			if (!isVariantListNameValid(listName, validListArray)) {
 				session.replaceDialog('setup', { lists: validListArray });
 			} else {
-				variantListName = listName;
+				variantListName = encodeURIComponent(listName);
 				addSSEListener();
 				session.endDialog(`Setup for list name: ${listName}`);
 				session.endConversation("Setup complete !");
