@@ -79,7 +79,7 @@ bot.dialog('setup', [
 .endConversationAction(
     "endSetup", "Setup canceled !",
     {
-        matches: /^cancel$|^goodbye$/i,
+        matches: /^(@random-chooser-bot)?([ ]*)(cancel|goodbye)$/i,
         confirmPrompt: "This will cancel your order. Are you sure?"
     }
 )
@@ -107,7 +107,7 @@ bot.dialog('help', function (session) {
     say('',card);
 })
 .triggerAction({
-    matches: /^help$/i,
+    matches: /^(@random-chooser-bot)?([ ]*)help$/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
@@ -127,7 +127,7 @@ bot.dialog('next', function (session) {
 	}
 })
 .triggerAction({
-    matches: /^next$/i,
+    matches: /^(@random-chooser-bot)?([ ]*)next$/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
@@ -147,7 +147,7 @@ bot.dialog('random', function (session) {
 	}
 })
 .triggerAction({
-    matches: /^random$/i,
+    matches: /^(@random-chooser-bot)?([ ]*)random$/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
