@@ -266,12 +266,10 @@ function getAdressByList (variantListName) {
 	throw `List "${variantListName}" is unknown !`;
 }
 function _getListByAddress (address) {
-	console.log(`address|channelId:${address.channelId}; isGroup:${address.conversation.isGroup}; conversation.id:${address.conversation.id}`);
+	console.log(`address|channelId:${address.channelId}; isGroup:${address.conversation.isGroup}; conversation.id:${address.conversation.id}; conversation.name:${address.conversation.name}`);
 	for (variantListName in knownListAdressDict) {
 		const listAddress = knownListAdressDict[variantListName];
-		if (address.conversation.isGroup && listAddress.conversation.id === address.conversation.id) {
-			return variantListName;
-		} else if (listAddress.channelId === address.channelId) {
+		if (listAddress.conversation.id === address.conversation.id) {
 			return variantListName;
 		}
 	}
