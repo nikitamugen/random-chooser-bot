@@ -32,15 +32,15 @@ const bot = new builder.UniversalBot(connector);
 
 // Register in-memory storage
 //
-// const inMemoryStorage = new builder.MemoryBotStorage();
-// bot.set('storage', inMemoryStorage); 
+const inMemoryStorage = new builder.MemoryBotStorage();
+bot.set('storage', inMemoryStorage); 
 
 // Register table storage
 //
-const tableName = 'botdata';
-const azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
-const tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
-bot.set('storage', tableStorage);
+// const tableName = 'botdata';
+// const azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
+// const tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
+// bot.set('storage', tableStorage);
 
 bot.dialog('/', [
 	function (session) {
@@ -52,18 +52,18 @@ bot.dialog('/', [
 var variantListName;
 bot.dialog('setup', [
 	function (session, args) {
-		session.send("Setup begin !");
 		messageAddress = session.message.address;
 
 		if (args && args.lists) {
 			const listString = args.lists.map( (currentValue) => {return currentValue.name} ).join(', ');
 			builder.Prompts.text(session, `List name is incorrect. Please type a correct name from list: ${listString}`);
 		} else {
+			session.send("Setup begin !");
 			builder.Prompts.text(session, "Please tell me a valid *Variant List* name from app to listen:");
 		}
 	},
 	function (session, results) {
-		const listName = results.response;
+		const listName = results.response.replace(/^(random-chooser-bot)?([ ]*)/, '');
 		getVariantListArray().then(validListArray => {
 			if (!isVariantListNameValid(listName, validListArray)) {
 				session.replaceDialog('setup', { lists: validListArray });
