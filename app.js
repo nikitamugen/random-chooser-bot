@@ -4,22 +4,22 @@ A simple echo bot for the Microsoft Bot Framework.
 
 const __API__ = 'https://random-chooser-backend.herokuapp.com/api/v1/';
 
-var restify = require('restify');
-var builder = require('botbuilder');
-var botbuilder_azure = require("botbuilder-azure");
-var EventSource = require("eventsource");
+const restify = require('restify');
+const builder = require('botbuilder');
+const botbuilder_azure = require("botbuilder-azure");
+const EventSource = require("eventsource");
 const axios = require('axios');
 
 // Setup Restify Server
 //
-var server = restify.createServer();
+const server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
    console.log('%s listening to %s', server.name, server.url); 
 });
   
 // Create chat connector for communicating with the Bot Framework Service
 //
-var connector = new builder.ChatConnector({
+const connector = new builder.ChatConnector({
     appId: process.env.MicrosoftAppId,
     appPassword: process.env.MicrosoftAppPassword,
     openIdMetadata: process.env.BotOpenIdMetadata
@@ -28,19 +28,19 @@ var connector = new builder.ChatConnector({
 // Listen for messages from users 
 server.post('/api/messages', connector.listen());
 
-var bot = new builder.UniversalBot(connector);
+const bot = new builder.UniversalBot(connector);
 
 // Register in-memory storage
 //
-var inMemoryStorage = new builder.MemoryBotStorage();
-bot.set('storage', inMemoryStorage); 
+// const inMemoryStorage = new builder.MemoryBotStorage();
+// bot.set('storage', inMemoryStorage); 
 
 // Register table storage
 //
-// var tableName = 'botdata';
-// var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
-// var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
-// bot.set('storage', tableStorage);
+const tableName = 'botdata';
+const azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
+const tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
+bot.set('storage', tableStorage);
 
 bot.dialog('/', [
 	function (session) {
@@ -79,12 +79,12 @@ bot.dialog('setup', [
 .endConversationAction(
     "endSetup", "Setup canceled !",
     {
-        matches: /^(@random-chooser-bot)?([ ]*)(cancel|goodbye)$/i,
+        matches: /^(random-chooser-bot)?([ ]*)(cancel|goodbye)$/i,
         confirmPrompt: "This will cancel your order. Are you sure?"
     }
 )
 .triggerAction({
-    matches: /^(@random-chooser-bot)?([ ]*)setup$/i,
+    matches: /^(random-chooser-bot)?([ ]*)setup$/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
@@ -107,7 +107,7 @@ bot.dialog('help', function (session) {
     say('',card);
 })
 .triggerAction({
-    matches: /^(@random-chooser-bot)?([ ]*)help$/i,
+    matches: /^(random-chooser-bot)?([ ]*)help$/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
@@ -127,7 +127,7 @@ bot.dialog('next', function (session) {
 	}
 })
 .triggerAction({
-    matches: /^(@random-chooser-bot)?([ ]*)next$/i,
+    matches: /^(random-chooser-bot)?([ ]*)next$/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
@@ -147,7 +147,7 @@ bot.dialog('random', function (session) {
 	}
 })
 .triggerAction({
-    matches: /^(@random-chooser-bot)?([ ]*)random$/i,
+    matches: /^(random-chooser-bot)?([ ]*)random$/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
