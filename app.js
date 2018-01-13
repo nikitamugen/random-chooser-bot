@@ -251,11 +251,8 @@ function sseEventHandler (event) {
 	}
 }
 function sseEventErrorHandler (event) {
-	const message = JSON.parse(event.data);
-	const variantListName = message.listName;
-
 	if (eventSource.readyState === 2) {
-		console.log(`Listener fault for list: "${variantListName}". Try reconnect after 5 seconds`);
+		console.log(`Listener fault". Try reconnect after 5 seconds`);
 		setTimeout(addSSEListener, 5000);
 	}
 }
