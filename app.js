@@ -32,15 +32,22 @@ var bot = new builder.UniversalBot(connector);
 
 // Register in-memory storage
 //
-// var inMemoryStorage = new builder.MemoryBotStorage();
-// bot.set('storage', inMemoryStorage); 
+var inMemoryStorage = new builder.MemoryBotStorage();
+bot.set('storage', inMemoryStorage); 
 
 // Register table storage
 //
-var tableName = 'botdata';
-var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
-var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
-bot.set('storage', tableStorage);
+// var tableName = 'botdata';
+// var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
+// var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
+// bot.set('storage', tableStorage);
+
+bot.dialog('/', [
+	function (session) {
+		messageAddress = session.message.address;
+		session.endConversation("Sorry. I don't get it ... Please type help for instructions.");
+	}
+])
 
 var variantListName;
 bot.dialog('setup', [
@@ -77,7 +84,7 @@ bot.dialog('setup', [
     }
 )
 .triggerAction({
-    matches: /^setup$/i,
+    matches: /^(@random-chooser-bot)?([ ]*)setup$/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
