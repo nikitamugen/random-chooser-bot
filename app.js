@@ -268,7 +268,9 @@ function getAdressByList (variantListName) {
 function _getListByAddress (address) {
 	for (variantListName in knownListAdressDict) {
 		const listAddress = knownListAdressDict[variantListName];
-		if (listAddress.channelId === address.channelId) {
+		if (address.conversation.isGroup && listAddress.conversation.id === address.conversation.id) {
+			return variantListName;
+		} else if (listAddress.channelId === address.channelId) {
 			return variantListName;
 		}
 	}
