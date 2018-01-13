@@ -2,7 +2,7 @@
 A simple echo bot for the Microsoft Bot Framework. 
 -----------------------------------------------------------------------------*/
 
-const __API__ = 'https://random-chooser-backend.herokuapp.com/api/v1/';
+const __API__ = 'https://random-chooser-backend.herokuapp.com/api/v1';
 
 const restify = require('restify');
 const builder = require('botbuilder');
@@ -44,16 +44,12 @@ bot.set('storage', inMemoryStorage);
 
 bot.dialog('/', [
 	function (session) {
-		messageAddress = session.message.address;
 		session.endConversation(`You said: "${session.message.text}". Sorry, but i didn't understand ... Please type help for instructions.`);
 	}
 ])
 
-var variantListName;
 bot.dialog('setup', [
 	function (session, args) {
-		messageAddress = session.message.address;
-
 		if (args && args.lists) {
 			const listString = args.lists.map( (currentValue) => {return currentValue.name} ).join(', ');
 			builder.Prompts.text(session, `List name is incorrect. Please type a correct name from list: ${listString}`);
@@ -68,8 +64,9 @@ bot.dialog('setup', [
 			if (!isVariantListNameValid(listName, validListArray)) {
 				session.replaceDialog('setup', { lists: validListArray });
 			} else {
-				variantListName = encodeURIComponent(listName);
-				addSSEListener();
+				const variantListName = encodeURIComponent(listName);
+				const address = session.message.address;
+				addSSEListener(variantListName, address);
 				session.endDialog(`Setup for list name: ${listName}`);
 				session.endConversation("Setup complete !");
 			}
@@ -94,8 +91,6 @@ bot.dialog('setup', [
 });
 
 bot.dialog('help', function (session) {
-	messageAddress = session.message.address;
-
 	const card = new builder.ReceiptCard(session)
         .title('Available commands:')
         .facts([
@@ -104,7 +99,9 @@ bot.dialog('help', function (session) {
             builder.Fact.create(session, '( random )', 'Choose random variant'),
             builder.Fact.create(session, '( help )', 'This menu')
         ]);
-    say('',card);
+
+    const address = session.message.address;
+    say(address, '', card);
 })
 .triggerAction({
     matches: /^(random-chooser-bot)?([ ]*)help$/i,
@@ -117,10 +114,12 @@ bot.dialog('help', function (session) {
 });
 
 bot.dialog('next', function (session) {
-	messageAddress = session.message.address;
-
 	try {
-		getNext();
+		const address = session.message.address;
+		postListOperationByAddress(address, "next");
+	}
+	catch (error) {
+		say(address, "error");
 	}
 	finally {
 		session.endConversation();
@@ -137,10 +136,12 @@ bot.dialog('next', function (session) {
 });
 
 bot.dialog('random', function (session) {
-	messageAddress = session.message.address;
-
 	try {
-		getRandom();
+		const address = session.message.address;
+		postListOperationByAddress(address, "randomNext");
+	}
+	catch (error) {
+		say(address, "error");
 	}
 	finally {
 		session.endConversation();
@@ -155,6 +156,21 @@ bot.dialog('random', function (session) {
         session.beginDialog(args.action, args);
     }
 });
+
+function postListOperationByAddress (address, operation) {
+	try {
+		const variantListName = _getListByAddress(address);
+
+		const webMethod = `${__API__}/variantList/${operation}/${variantListName}`;
+		return axios.post(webMethod)
+		.catch(error => {
+			say(address, error);
+		});
+	}
+	catch (error) {
+		say(address, "Sorry, but i don't know list to make operation under. Please make *setup* for begin.");
+	}
+}
 
 bot.dialog('askVariantListName', [
 	function (session) {
@@ -175,90 +191,124 @@ function isVariantListNameValid (variantListName, variantListArray) {
 }
 
 function getVariantListArray () {
-	const webMethod = __API__+'variantList/';
+	const webMethod = `${__API__}/variantList/`;
 	return axios.get(webMethod)
 	.then(response => {
 		return response.data;
-	})
-	.catch(error => {
-		say(`Error: ${error}`);
-	});
-}
-function getNext () {
-	checkVariantListNameEmpty();
-
-	const webMethod = __API__+'variantList/next/'+variantListName;
-	return axios.post(webMethod)
-	.catch(error => {
-		say(error);
-	});
-}
-function getRandom () {
-	checkVariantListNameEmpty();
-
-	const webMethod = __API__+'variantList/randomNext/'+variantListName;
-	return axios.post(webMethod)
-	.catch(error => {
-		say(error);
 	});
 }
 
-function checkVariantListNameEmpty() {
-	if (variantListName === "" || variantListName === undefined || variantListName === null) {
-		say("Sorry, but *Variant list name* is empty. Please make *setup* for begin.");
-		throw "variantListName is empty !";
+function addSSEListener (variantListName, address) {
+	if (isEmpty(variantListName)) {
+		console.log("addSSEListener|variantListName is Empty");
+		return;
 	}
+	if (isEmpty(address)) {
+		console.log("addSSEListener|address is Empty");
+		return;
+	}
+	_removeListEmiterByList(variantListName);
+	_addListEmiterByList(variantListName, address);
 }
-
-var eventSource;
-function addSSEListener () {
-	if (eventSource !== undefined) {
+function _removeListEmiterByList (variantListName) {
+	if (knownListEmiterDict.hasOwnProperty(variantListName)) {
+		eventSource = knownListEmiterDict[variantListName]
 		eventSource.close();
+
+		delete knownListEmiterDict[variantListName];
 	}
-	const webMethod = __API__+'events/'+variantListName+'/'+sessionGuid;
+	if (knownListAdressDict.hasOwnProperty(variantListName)) {
+		delete knownListAdressDict[variantListName];
+	}
+}
+function _removeListEmiterByAddress (address) {
+	const variantListName = _getListByAddress(address);
+	_removeListEmiterByList(variantListName);
+}
+function _addListEmiterByList (variantListName, address) {
+	const webMethod = `${__API__}/events/${variantListName}/${address.channelId}`;
 	eventSource = new EventSource(webMethod, {withCredentials: true});
 	eventSource.onerror = sseEventErrorHandler;
 	eventSource.onmessage = sseEventHandler;
+
+	knownListEmiterDict[variantListName] = eventSource;
+	knownListAdressDict[variantListName] = address;
 }
+
 function sseEventHandler (event) {
 	const message = JSON.parse(event.data);
+	const variantListName = message.listName;
+	const address = getAdressByList(variantListName);
+
 	if (message.type == "CONNECTED") {
-		console.log('CONNECTED');
+		console.log(`CONNECTED with list: "${variantListName}"`);
 	} else if (message.type == "VARIANT_LIST_REMOVE") {
-		say(`Sorry, but variant list with name '${message.listName}' was removed. Type *setup* to continue. Or remove me.`);
+		say(address, `Sorry, but variant list with name: "${variantListName}" was removed. Type *setup* to continue. Or remove me.`);
 		eventSource.close();
 	} else {
-		say(message.text);
+		say(address, message.text);
 	}
 }
 function sseEventErrorHandler (event) {
+	const message = JSON.parse(event.data);
+	const variantListName = message.listName;
+
 	if (eventSource.readyState === 2) {
-		console.log('SSE listener fault. Try reconnect after 5 seconds');
+		console.log(`Listener fault for list: "${variantListName}". Try reconnect after 5 seconds`);
 		setTimeout(addSSEListener, 5000);
 	}
 }
 
-var messageAddress;
-bot.on('contactRelationUpdate', (message) => {
-	messageAddress = message.address;
+var knownListAdressDict = {};
+var knownListEmiterDict = {};
+function getAdressByList (variantListName) {
+	if (knownListAdressDict.hasOwnProperty(variantListName)) {
+		return knownListAdressDict[variantListName];
+	}
+	throw `List "${variantListName}" is unknown !`;
+}
+function _getListByAddress (address) {
+	for (variantListName in knownListAdressDict) {
+		const listAddress = knownListAdressDict[variantListName];
+		if (listAddress.channelId === address.channelId) {
+			return variantListName;
+		}
+	}
+	throw `Address "${address}" is not registered !`;
+}
+function getEmiterByList (variantListName) {
+	if (knownListEmiterDict.hasOwnProperty(variantListName)) {
+		return knownListEmiterDict[variantListName];
+	}
+	throw `List "${variantListName}" is unknown !`;
+}
+
+const botAddedAction = "add";
+const botRemovedAction = "remove";
+bot.on('conversationUpdate', (event) => {
+	const address = event.address;
+	if (event.action === botAddedAction) {
+		const msg = "Oh ... Hi there ! For begin type *help* for instructions. Or say *setup* to setup :)";
+		say(address, msg);
+	} else if (event.action === botRemovedAction) {
+		const msg = "Goodbye ! :)";
+		say(address, msg);
+
+		_removeListEmiterByAddress(address);
+	}	
 });
-bot.on('conversationUpdate', (message) => {
-	messageAddress = message.address;
-});
-function say (text, card) {
+
+function say (address, text, card) {
 	let message = new builder.Message()
-	 			   .address(messageAddress)
+	 			   .address(address)
 	 			   .text(text);
-	if (card !== undefined || card !== null) {
+	if (!isEmpty(card)) {
 		message.addAttachment(card);
 	}
 
 	bot.send(message);
 }
 
-const sessionGuid = (() => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-})();
+function isEmpty (some) {
+	return (some === "" || some === undefined || some === null);
+}
