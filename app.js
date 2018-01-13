@@ -266,6 +266,7 @@ function getAdressByList (variantListName) {
 	throw `List "${variantListName}" is unknown !`;
 }
 function _getListByAddress (address) {
+	console.log(`address|channelId:${address.channelId}; isGroup:${address.conversation.isGroup}; conversation.id:${address.conversation.id}`);
 	for (variantListName in knownListAdressDict) {
 		const listAddress = knownListAdressDict[variantListName];
 		if (address.conversation.isGroup && listAddress.conversation.id === address.conversation.id) {
@@ -285,7 +286,7 @@ function getEmiterByList (variantListName) {
 
 const botAddedAction = "add";
 const botRemovedAction = "remove";
-bot.on('conversationUpdate', (event) => {
+bot.on('contactRelationUpdate', (event) => {
 	const address = event.address;
 	if (event.action === botAddedAction) {
 		const msg = "Oh ... Hi there ! For begin type *help* for instructions. Or say *setup* to setup :)";
