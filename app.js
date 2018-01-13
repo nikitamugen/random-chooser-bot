@@ -64,9 +64,8 @@ bot.dialog('setup', [
 			if (!isVariantListNameValid(listName, validListArray)) {
 				session.replaceDialog('setup', { lists: validListArray });
 			} else {
-				const variantListName = encodeURIComponent(listName);
 				const address = session.message.address;
-				addSSEListener(variantListName, address);
+				addSSEListener(listName, address);
 				session.endDialog(`Setup for list name: ${listName}`);
 				session.endConversation("Setup complete !");
 			}
@@ -160,8 +159,9 @@ bot.dialog('random', function (session) {
 function postListOperationByAddress (address, operation) {
 	try {
 		const variantListName = _getListByAddress(address);
+		const encodedVariantListName = encodeURIComponent(variantListName);
 
-		const webMethod = `${__API__}/variantList/${operation}/${variantListName}`;
+		const webMethod = `${__API__}/variantList/${operation}/${encodedVariantListName}`;
 		return axios.post(webMethod)
 		.catch(error => {
 			say(address, error);
@@ -226,7 +226,8 @@ function _removeListEmiterByAddress (address) {
 	_removeListEmiterByList(variantListName);
 }
 function _addListEmiterByList (variantListName, address) {
-	const webMethod = `${__API__}/events/${variantListName}/${address.channelId}`;
+	const encodedVariantListName = encodeURIComponent(variantListName);
+	const webMethod = `${__API__}/events/${encodedVariantListName}/${address.channelId}`;
 	eventSource = new EventSource(webMethod, {withCredentials: true});
 	eventSource.onerror = sseEventErrorHandler;
 	eventSource.onmessage = sseEventHandler;
