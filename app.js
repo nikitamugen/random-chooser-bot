@@ -332,8 +332,7 @@ function sayEventMessage (address, eventMessage) {
 }
 function createEventMessageCard(session, eventMessage) {
 	const card = new builder.HeroCard(session)
-    .title("Got event message")
-    .text(eventMessage.text)
+    .title(eventMessage.text)
     .buttons([
     	(function createGotoListButton(session, eventMessage) {
 	    	const variantListName = eventMessage.listName;
