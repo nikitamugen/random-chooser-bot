@@ -236,7 +236,8 @@ function _removeListEmiterByAddress (address) {
 }
 function _addListEmiterByList (variantListName, address) {
 	const encodedVariantListName = encodeURIComponent(variantListName);
-	const webMethod = `${__API__}/events/${encodedVariantListName}/${address.channelId}`;
+	const encodedConversion = encodeURIComponent(listAddress.conversation.id);
+	const webMethod = `${__API__}/events/${encodedVariantListName}/${encodedConversion}`;
 	eventSource = new EventSource(webMethod, {withCredentials: true});
 	eventSource.onerror = sseEventErrorHandler;
 	eventSource.onmessage = sseEventHandler;
