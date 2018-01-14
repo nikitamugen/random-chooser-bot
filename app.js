@@ -332,11 +332,12 @@ function sayEventMessage (address, eventMessage) {
 }
 function createEventMessageCard(session, eventMessage) {
 	const card = new builder.HeroCard(session)
-    .title(eventMessage.text)
+	.title("Got message")
+    .subtitle(eventMessage.text)
     .buttons([
     	(function createGotoListButton(session, eventMessage) {
 	    	const variantListName = eventMessage.listName;
-	    	const listUrl = `https://nikitamugen.gitlab.io/randomChooser?listName=${variantListName}`;
+	    	const listUrl = createListUrl(variantListName);
 	    	const msg = `Current list: "${variantListName}"`;
 	    	return builder.CardAction.openUrl(session, listUrl, msg);
 	    })(session, eventMessage)
@@ -368,7 +369,7 @@ function createHelpCard(session, variantListName) {
         builder.Fact.create(session, '( help )', 'This menu')
     ]);
     if (!isEmpty(variantListName)) {
-    	const listUrl = `https://nikitamugen.gitlab.io/randomChooser?listName=${variantListName}`;
+    	const listUrl = createListUrl(variantListName);
     	const msg = `Current list: "${variantListName}"`;
     	card.buttons([
 			builder.CardAction.openUrl(session, listUrl, msg)
@@ -383,7 +384,7 @@ function createCustomCard(session, title, subtitle, text, variantListName) {
     .subtitle(subtitle)
     .text(text);
     if (!isEmpty(variantListName)) {
-    	const listUrl = `https://nikitamugen.gitlab.io/randomChooser?listName=${variantListName}`;
+    	const listUrl = createListUrl(variantListName);
     	const msg = `Current list: "${variantListName}"`;
     	card.buttons([
 			builder.CardAction.openUrl(session, listUrl, msg)
@@ -391,6 +392,10 @@ function createCustomCard(session, title, subtitle, text, variantListName) {
     }
 
     return card;
+}
+function createListUrl(variantListName) {
+	const listUrl = `https://nikitamugen.gitlab.io/randomChooser`;
+	return listUrl;
 }
 
 function isEmpty (some) {
