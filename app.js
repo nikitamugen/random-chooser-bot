@@ -49,27 +49,43 @@ bot.dialog('/', [
 ])
 
 bot.dialog('setup', [
-	function (session, args) {
-		if (args && args.lists) {
-			const listString = args.lists.map( (currentValue) => {return currentValue.name} ).join(', ');
-			builder.Prompts.text(session, `List name is incorrect. Please type a correct name from list: ${listString}`);
-		} else {
-			session.send("Setup begin !");
-			builder.Prompts.text(session, "Please tell me a valid *Variant List* name from app to listen:");
-		}
+	function (session) {
+		session.send("Setup begin !");
+		getVariantListArray()
+		.then(variantListArray => {
+			let choiceCounter = 0;
+			let choices = variantListArray.map(variantList => {
+				const choice = {
+					value: variantList.name,
+					text: variantList.name
+				};
+				return choice;
+			});
+			builder.Prompts.choice(session, 'Please choose variant list', choices, {
+	            maxRetries: 5,
+	            retryPrompt: 'Ooops, you just choosed incorrect variant. Please try again ...'
+			});
+		})
+		.catch(error => {
+			console.log(error);
+			const address = session.message.address;
+			say(address, error);
+		})
 	},
 	function (session, results) {
-		const listName = results.response.replace(/^(random-chooser-bot)?([ ]*)/, '');
-		getVariantListArray().then(validListArray => {
-			if (!isVariantListNameValid(listName, validListArray)) {
-				session.replaceDialog('setup', { lists: validListArray });
-			} else {
-				const address = session.message.address;
-				addSSEListener(listName, address);
-				session.endDialog(`Setup for list name: ${listName}`);
-				session.endConversation("Setup complete !");
-			}
-		})
+		try {
+			const variantListName = results.response.entity;
+			const address = session.message.address;
+			addSSEListener(variantListName, address);
+
+			const card = createCustomCard(session, "Setup comlete !",'','',variantListName);
+			say(address, '', card);
+		} catch (error) {
+			const address = session.message.address;
+			say(address, error);
+		} finally {
+			session.endConversation();
+		}
 	}
 ])
 .endConversationAction(
@@ -90,17 +106,15 @@ bot.dialog('setup', [
 });
 
 bot.dialog('help', function (session) {
-	const card = new builder.ReceiptCard(session)
-        .title('Available commands:')
-        .facts([
-            builder.Fact.create(session, '( setup )', 'Setup listener for variant list'),
-            builder.Fact.create(session, '( next )', 'Choose next variant'),
-            builder.Fact.create(session, '( random )', 'Choose random variant'),
-            builder.Fact.create(session, '( help )', 'This menu')
-        ]);
-
-    const address = session.message.address;
-    say(address, '', card);
+	try {
+		const address = session.message.address;
+		sayHelp(address);
+	} catch (error) {
+		const address = session.message.address;
+		say(address, error);
+	} finally {
+		session.endConversation();
+	}
 })
 .triggerAction({
     matches: /^(random-chooser-bot)?([ ]*)help$/i,
@@ -114,6 +128,8 @@ bot.dialog('help', function (session) {
 
 bot.dialog('next', function (session) {
 	try {
+		session.send("Wait a second. Post *next* operation on the server ...");
+
 		const address = session.message.address;
 		postListOperationByAddress(address, "next");
 	}
@@ -136,6 +152,8 @@ bot.dialog('next', function (session) {
 
 bot.dialog('random', function (session) {
 	try {
+		session.send("Wait a second. Post *random* operation on the server ...");
+
 		const address = session.message.address;
 		postListOperationByAddress(address, "randomNext");
 	}
@@ -181,21 +199,12 @@ bot.dialog('askVariantListName', [
     }
 ]);
 
-function isVariantListNameValid (variantListName, variantListArray) {
-	if (variantListName === "" || variantListName === undefined || variantListName === null) {
-		return false;
-	}
-	return variantListArray.some((currentValue, index, array) => {
-		return (currentValue.name === variantListName);
-	});
-}
-
 function getVariantListArray () {
 	const webMethod = `${__API__}/variantList/`;
 	return axios.get(webMethod)
-	.then(response => {
+	.then((response) => {
 		return response.data;
-	});
+	})
 }
 
 function addSSEListener (variantListName, address) {
@@ -237,17 +246,21 @@ function _addListEmiterByList (variantListName, address) {
 }
 
 function sseEventHandler (event) {
-	const message = JSON.parse(event.data);
-	const variantListName = message.listName;
-	const address = getAdressByList(variantListName);
+	try {
+		const message = JSON.parse(event.data);
+		const variantListName = message.listName;
+		const address = getAdressByList(variantListName);
 
-	if (message.type == "CONNECTED") {
-		console.log(`CONNECTED with list: "${variantListName}"`);
-	} else if (message.type == "VARIANT_LIST_REMOVE") {
-		say(address, `Sorry, but variant list with name: "${variantListName}" was removed. Type *setup* to continue. Or remove me.`);
-		eventSource.close();
-	} else {
-		say(address, message.text);
+		if (message.type == "CONNECTED") {
+			console.log(`CONNECTED with list: "${variantListName}"`);
+		} else if (message.type == "VARIANT_LIST_REMOVE") {
+			say(address, `Sorry, but variant list with name: "${variantListName}" was removed. Type *setup* to continue. Or remove me.`);
+			eventSource.close();
+		} else {
+			sayEventMessage(address, message);
+		}
+	} catch (error) {
+		console.log(`Got error in "sseEventHandler" method. ${error}`);
 	}
 }
 function sseEventErrorHandler (event) {
@@ -306,6 +319,79 @@ function say (address, text, card) {
 	}
 
 	bot.send(message);
+}
+function sayEventMessage (address, eventMessage) {
+	bot.loadSession(address, (error, session) => {
+		if (!isEmpty(error)) {
+			throw error;
+		} else {
+			const card = createEventMessageCard(session, eventMessage);
+			say(address, '', card);
+		}
+	});
+}
+function createEventMessageCard(session, eventMessage) {
+	const card = new builder.HeroCard(session)
+    .title("Got event message")
+    .text(eventMessage.text)
+    .buttons([
+    	(function createGotoListButton(session, eventMessage) {
+	    	const variantListName = eventMessage.listName;
+	    	const listUrl = `https://nikitamugen.gitlab.io/randomChooser?listName=${variantListName}`;
+	    	const msg = `Current list: "${variantListName}"`;
+	    	return builder.CardAction.openUrl(session, listUrl, msg);
+	    })(session, eventMessage)
+    ]);
+
+    return card;
+}
+function sayHelp(address) {
+	let variantListName = "";
+	try {
+		variantListName = _getListByAddress(address);
+	} catch (error) {}
+	bot.loadSession(address, (error, session) => {
+		if (!isEmpty(error)) {
+			throw error;
+		} else {
+			const card = createHelpCard(session, variantListName);
+			say(address, '', card);
+		}
+	});
+}
+function createHelpCard(session, variantListName) {
+	const card = new builder.ReceiptCard(session)
+    .title('Available commands:')
+    .facts([
+        builder.Fact.create(session, '( setup )', 'Setup listener for variant list'),
+        builder.Fact.create(session, '( next )', 'Choose next variant'),
+        builder.Fact.create(session, '( random )', 'Choose random variant'),
+        builder.Fact.create(session, '( help )', 'This menu')
+    ]);
+    if (!isEmpty(variantListName)) {
+    	const listUrl = `https://nikitamugen.gitlab.io/randomChooser?listName=${variantListName}`;
+    	const msg = `Current list: "${variantListName}"`;
+    	card.buttons([
+			builder.CardAction.openUrl(session, listUrl, msg)
+		]);
+    }
+
+    return card;
+}
+function createCustomCard(session, title, subtitle, text, variantListName) {
+	const card = new builder.HeroCard(session)
+    .title(title)
+    .subtitle(subtitle)
+    .text(text);
+    if (!isEmpty(variantListName)) {
+    	const listUrl = `https://nikitamugen.gitlab.io/randomChooser?listName=${variantListName}`;
+    	const msg = `Current list: "${variantListName}"`;
+    	card.buttons([
+			builder.CardAction.openUrl(session, listUrl, msg)
+		]);
+    }
+
+    return card;
 }
 
 function isEmpty (some) {
