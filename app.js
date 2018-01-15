@@ -17,12 +17,12 @@ server.listen(process.env.port || process.env.PORT || 3978, function () {
    console.log('%s listening to %s', server.name, server.url); 
 });
 
-const editExpr = "(Edited previous message: )?";
 const botName = "random-chooser-bot";
-const botNameExpr = `([@]?${botName})?([ ]*)`;
-const ignoreExpr = editExpr+botNameExpr;
 
-const serviceInfExpr = "<[^>]*>";
+const spacesExpr = "[ ]*";
+const botNameExpr = `([@]?${botName})?${spacesExpr}`;
+
+const serviceInfExpr = `${spacesExpr}(<[^>]*>)*`;
 
 // Create chat connector for communicating with the Bot Framework Service
 //
@@ -99,12 +99,12 @@ bot.dialog('setup', [
 .endConversationAction(
     "endSetup", "Setup canceled !",
     {
-        matches: /(cancel|goodbye)/i,
+    	matches: new RegExp(`^${botNameExpr}(cancel|goodbye)${serviceInfExpr}$`, 'i'),
         confirmPrompt: "This will cancel your order. Are you sure?"
     }
 )
 .triggerAction({
-    matches: /setup/i,
+    matches: new RegExp(`^${botNameExpr}setup${serviceInfExpr}$`, 'i'),
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
@@ -125,7 +125,7 @@ bot.dialog('help', function (session) {
 	}
 })
 .triggerAction({
-    matches: /help/i,
+    matches: new RegExp(`^${botNameExpr}help${serviceInfExpr}$`, 'i'),
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
@@ -149,7 +149,7 @@ bot.dialog('next', function (session) {
 	}
 })
 .triggerAction({
-    matches: /next/i,
+    matches: new RegExp(`^${botNameExpr}next${serviceInfExpr}$`, 'i'),
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
@@ -173,7 +173,7 @@ bot.dialog('random', function (session) {
 	}
 })
 .triggerAction({
-    matches: /random/i,
+    matches: new RegExp(`^${botNameExpr}random${serviceInfExpr}$`, 'i'),
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
