@@ -16,7 +16,13 @@ const server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
    console.log('%s listening to %s', server.name, server.url); 
 });
-  
+
+const editExpr = "(Edited previous message: )?";
+const botName = "random-chooser-bot";
+const botNameExpr = `([@]?${botName})?([ ]*)`;
+const tagExpr = "<[]>"
+const ignoreExpr = "(Edited previous message: )?([@]?random-chooser-bot)?([ ]*)";
+
 // Create chat connector for communicating with the Bot Framework Service
 //
 const connector = new builder.ChatConnector({
@@ -47,6 +53,7 @@ bot.dialog('/', [
 		const msg = `You said: "${session.message.text}". Sorry, but i didn't understand ... Please type help for instructions.`;
 		session.endConversation(msg);
 		console.log(msg);
+		console.log(session.message);
 		for (var i=0; i < session.message.text.length; i++) {
      		console.log(session.message.text.charCodeAt(i));
      	}
@@ -96,7 +103,7 @@ bot.dialog('setup', [
 .endConversationAction(
     "endSetup", "Setup canceled !",
     {
-        matches: /^(Edited previous message: )?([@]?random-chooser-bot)?([ ]*)(cancel|goodbye)$/i,
+        matches: /^(cancel|goodbye)$/i,
         confirmPrompt: "This will cancel your order. Are you sure?"
     }
 )
