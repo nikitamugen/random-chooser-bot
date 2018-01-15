@@ -20,8 +20,9 @@ server.listen(process.env.port || process.env.PORT || 3978, function () {
 const editExpr = "(Edited previous message: )?";
 const botName = "random-chooser-bot";
 const botNameExpr = `([@]?${botName})?([ ]*)`;
-const tagExpr = "<[]>"
-const ignoreExpr = "(Edited previous message: )?([@]?random-chooser-bot)?([ ]*)";
+const ignoreExpr = editExpr+botNameExpr;
+
+const serviceInfExpr = "<[^>]*>";
 
 // Create chat connector for communicating with the Bot Framework Service
 //
@@ -103,12 +104,12 @@ bot.dialog('setup', [
 .endConversationAction(
     "endSetup", "Setup canceled !",
     {
-        matches: /^(cancel|goodbye)$/i,
+        matches: /(cancel|goodbye)/i,
         confirmPrompt: "This will cancel your order. Are you sure?"
     }
 )
 .triggerAction({
-    matches: /^(Edited previous message: )?([@]?random-chooser-bot)?([ ]*)setup$/i,
+    matches: /setup/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
@@ -129,7 +130,7 @@ bot.dialog('help', function (session) {
 	}
 })
 .triggerAction({
-    matches: /^(Edited previous message: )?([@]?random-chooser-bot)?([ ]*)help$/i,
+    matches: /help/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
@@ -153,7 +154,7 @@ bot.dialog('next', function (session) {
 	}
 })
 .triggerAction({
-    matches: /^(Edited previous message: )?([@]?random-chooser-bot)?([ ]*)next$/i,
+    matches: /next/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
@@ -177,7 +178,7 @@ bot.dialog('random', function (session) {
 	}
 })
 .triggerAction({
-    matches: /^(Edited previous message: )?([@]?random-chooser-bot)?([ ]*)random$/i,
+    matches: /random/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
