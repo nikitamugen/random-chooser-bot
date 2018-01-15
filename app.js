@@ -53,11 +53,6 @@ bot.dialog('/', [
 	function (session) {
 		const msg = `You said: "${session.message.text}". Sorry, but i didn't understand ... Please type help for instructions.`;
 		session.endConversation(msg);
-		console.log(msg);
-		console.log(session.message);
-		for (var i=0; i < session.message.text.length; i++) {
-     		console.log(session.message.text.charCodeAt(i));
-     	}
 	}
 ])
 
