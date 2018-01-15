@@ -91,12 +91,12 @@ bot.dialog('setup', [
 .endConversationAction(
     "endSetup", "Setup canceled !",
     {
-        matches: /^(random-chooser-bot)?([ ]*)(cancel|goodbye)$/i,
+        matches: /^(Edited previous message: )?([@]?random-chooser-bot)?([ ]*)(cancel|goodbye)$/i,
         confirmPrompt: "This will cancel your order. Are you sure?"
     }
 )
 .triggerAction({
-    matches: /^(random-chooser-bot)?([ ]*)setup$/i,
+    matches: /^(Edited previous message: )?([@]?random-chooser-bot)?([ ]*)setup$/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
@@ -117,7 +117,7 @@ bot.dialog('help', function (session) {
 	}
 })
 .triggerAction({
-    matches: /^(random-chooser-bot)?([ ]*)help$/i,
+    matches: /^(Edited previous message: )?([@]?random-chooser-bot)?([ ]*)help$/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
@@ -141,7 +141,7 @@ bot.dialog('next', function (session) {
 	}
 })
 .triggerAction({
-    matches: /^(random-chooser-bot)?([ ]*)next$/i,
+    matches: /^(Edited previous message: )?([@]?random-chooser-bot)?([ ]*)next$/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
@@ -165,7 +165,7 @@ bot.dialog('random', function (session) {
 	}
 })
 .triggerAction({
-    matches: /^(random-chooser-bot)?([ ]*)random$/i,
+    matches: /^(Edited previous message: )?([@]?random-chooser-bot)?([ ]*)random$/i,
     onSelectAction: (session, args, next) => {
         // Add the help dialog to the dialog stack 
         // (override the default behavior of replacing the stack)
@@ -189,15 +189,6 @@ function postListOperationByAddress (address, operation) {
 		say(address, "Sorry, but i don't know list to make operation under. Please make *setup* for begin.");
 	}
 }
-
-bot.dialog('askVariantListName', [
-	function (session) {
-        builder.Prompts.text(session, "Please tell me a valid *Variant List* name from app to listen");
-    },
-    function (session, results) {
-        session.endDialogWithResult(results);
-    }
-]);
 
 function getVariantListArray () {
 	const webMethod = `${__API__}/variantList/`;
