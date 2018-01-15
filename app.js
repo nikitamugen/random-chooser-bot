@@ -44,7 +44,12 @@ bot.set('storage', inMemoryStorage);
 
 bot.dialog('/', [
 	function (session) {
-		session.endConversation(`You said: "${session.message.text}". Sorry, but i didn't understand ... Please type help for instructions.`);
+		const msg = `You said: "${session.message.text}". Sorry, but i didn't understand ... Please type help for instructions.`;
+		session.endConversation(msg);
+		console.log(msg);
+		for (var i=0; i < session.message.text.length; i++) {
+     		console.log(session.message.text.charCodeAt(i));
+     	}
 	}
 ])
 
