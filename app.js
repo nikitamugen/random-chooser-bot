@@ -44,6 +44,14 @@ function subscribe(addressItem) {
     say(address, msg);
 }
 
+// periodically sending requests
+// to keep app alive
+//
+server.get('/ping', (req, res, next) => {
+    res.send('pong');
+    next();
+});
+
 const botName = "random-chooser-bot";
 
 const spacesExpr = "[ ]*";
