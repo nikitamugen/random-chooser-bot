@@ -9,13 +9,40 @@ const builder = require('botbuilder');
 const botbuilder_azure = require("botbuilder-azure");
 const EventSource = require("eventsource");
 const axios = require('axios');
+const assert = require('assert');
+
+var db = require('./addresses.js');
+const addresses = new db.Addresses();
 
 // Setup Restify Server
 //
 const server = restify.createServer();
-server.listen(process.env.port || process.env.PORT || 3978, function () {
-   console.log('%s listening to %s', server.name, server.url); 
+addresses.connect()
+.then(() => {
+    server.listen(process.env.port || process.env.PORT || 3978, function () {
+       console.log('%s listening to %s', server.name, server.url); 
+    });
+})
+.then(() => {
+    const addressFilter = new db.AddressFilter();
+    return addresses.findAll(addressFilter);
+})
+.then(adressItems => {
+    adressItems.forEach(addressItem => subscribe(addressItem));
+})
+.catch(err => {
+    console.log(err); 
 });
+
+function subscribe(addressItem) {
+    assert.notEqual(addressItem, null);
+    const address = JSON.parse(addressItem.address);
+    const listName = addressItem.listName;
+
+    addSSEListener(listName, address);
+    const msg = `Subscribed for list '${listName}' changes.`
+    say(address, msg);
+}
 
 const botName = "random-chooser-bot";
 
@@ -42,17 +69,10 @@ const bot = new builder.UniversalBot(connector);
 const inMemoryStorage = new builder.MemoryBotStorage();
 bot.set('storage', inMemoryStorage); 
 
-// Register table storage
-//
-// const tableName = 'botdata';
-// const azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
-// const tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
-// bot.set('storage', tableStorage);
-
 bot.dialog('/', [
 	function (session) {
 		const msg = `You said: "${session.message.text}". Sorry, but i didn't understand ... Please type help for instructions.`;
-		session.endConversation(msg);
+		session.send(msg);
 	}
 ])
 
@@ -84,15 +104,20 @@ bot.dialog('setup', [
 		try {
 			const variantListName = results.response.entity;
 			const address = session.message.address;
-			addSSEListener(variantListName, address);
 
-			const card = createCustomCard(session, "Setup comlete !",'','',variantListName);
-			say(address, '', card);
+            var addressSetup = new db.AddressSetup(address, variantListName);
+            var addressFilter = new db.AddressFilter().addressSetup(addressSetup);
+            addresses.remove(addressFilter)
+            .then(() => {
+                return addresses.insert(addressSetup)
+            })
+            .then(addressItem => {
+                subscribe(addressItem);
+            });
 		} catch (error) {
+            console.log(error);
 			const address = session.message.address;
 			say(address, error);
-		} finally {
-			session.endConversation();
 		}
 	}
 ])
@@ -120,8 +145,6 @@ bot.dialog('help', function (session) {
 	} catch (error) {
 		const address = session.message.address;
 		say(address, error);
-	} finally {
-		session.endConversation();
 	}
 })
 .triggerAction({
@@ -144,9 +167,6 @@ bot.dialog('next', function (session) {
 	catch (error) {
 		say(address, "error");
 	}
-	finally {
-		session.endConversation();
-	}
 })
 .triggerAction({
     matches: new RegExp(`^${botNameExpr}next${serviceInfExpr}$`, 'i'),
@@ -167,9 +187,6 @@ bot.dialog('random', function (session) {
 	}
 	catch (error) {
 		say(address, "error");
-	}
-	finally {
-		session.endConversation();
 	}
 })
 .triggerAction({
