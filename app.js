@@ -53,7 +53,7 @@ server.get('/ping', (req, res, next) => {
 });
 const https = require("https");
 setInterval(function() {
-    http.get("https://random-chooser-bot.herokuapp.com/ping");
+    https.get("https://random-chooser-bot.herokuapp.com/ping");
 }, 240000); // every 4 minutes (240000)
 
 const botName = "random-chooser-bot";
