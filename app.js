@@ -41,7 +41,7 @@ function subscribe(addressItem) {
 
     addSSEListener(listName, address);
     const msg = `Subscribed for list '${listName}' changes.`
-    say(address, msg);
+    console.log(msg);
 }
 
 // periodically sending requests
@@ -126,6 +126,7 @@ bot.dialog('setup', [
             .then(addressItem => {
                 subscribe(addressItem);
             });
+            session.send("Setup complete !");
 		} catch (error) {
             console.log(error);
 			const address = session.message.address;
