@@ -86,9 +86,11 @@ setInterval(function() {
 //   Get address with "address" command in chat
 // - title - title of a card with text lines and buttons
 // - subTitle - optional subtitle
-// - textLines - is array ot text lines.
+// - textLines - optional array ot text lines for primary message.
 //   Like: ['one', 'two'] - is "one\ntwo"
-// - buttons - array of clickable urls.
+// - cardLines - optional array ot text lines for card message.
+//   Like: ['one', 'two'] - is "one\ntwo"
+// - buttons - array of clickable urls for card.
 //   Like: [{'text': 'one', url: 'http://one'}, {'text': 'two', 'url': 'http://two'}]
 //
 // Example:
@@ -99,6 +101,10 @@ setInterval(function() {
 //      "textLines": [
 //        "one",
 //        "two"
+//      ],
+//      "cardLines": [
+//        "three",
+//        "four"
 //      ],
 //      "buttons": [
 //        {
@@ -111,35 +117,37 @@ setInterval(function() {
 //      ]
 //    }
 server.post('/message', (req, res, next) => {
-    console.log(req.body)
-
-    if (exists(req.body.buttons)) {
-        console.log('exists')
-    }
-    sendCustomCard(req.body.address, req.body.title, req.body.subTitle, req.body.textLines, req.body.buttons);
+    sendCustomCard(
+        req.body.address,
+        req.body.title,
+        req.body.subTitle,
+        req.body.textLines,
+        req.body.cardLines,
+        req.body.buttons
+    );
     res.send(200);
     next();
 });
 
-function sendCustomCard(address, title, subtitle, textLines, buttons) {
-    const message = new builder.Message().address(address).text(textLines.join('\n'));
+function sendCustomCard(address, title, subtitle, textLines, cardLines, buttons) {
+    const message = new builder.Message()
+                               .address(address)
+                               .text(textLines.join('\n'));
 
     bot.loadSession(address, (error, session) => {
         if (exists(error)) {
             message.text(error);
         } else {
             const card = new builder.HeroCard(session)
-                         .title(title)
-                         .subtitle(subtitle)
-                         .text(textLines.join('\n'));
+                                    .title(title)
+                                    .subtitle(subtitle)
+                                    .text(cardLines.join('\n'));
 
             if (exists(buttons)) {
-                card.buttons = buttons.map(b => builder.CardAction.openUrl(session, b.url, b.text).text('some').displayText('foo'));
-                console.log(card.buttons)
+                card.buttons = buttons.map(b => builder.CardAction.openUrl(session, b.url, b.text));
             }
             message.addAttachment(card);
         }
-        console.log(message);
         bot.send(message);
     });
 }
