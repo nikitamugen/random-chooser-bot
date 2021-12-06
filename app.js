@@ -91,31 +91,31 @@ setInterval(function() {
 //   Like: [{'text': 'one', url: 'http://one'}, {'text': 'two', 'url': 'http://two'}]
 //
 // Example:
-// {
-//   'address': 'some chat adress ...',
-//   'title': 'Wow! Skype is not dead yeat?',
-//   'subTitle': 'Or its a bad joke?',
-//   'textLines': [
-//     'one',
-//     'two',
-//   ],
-//   'buttons': [
-//     {
-//       'text': 'one',
-//       'url: 'http://one'
-//     }, {
-//       'text': 'two',
-//       'url: 'http://two'
-//     },
-//   ],
-// }
+//    {
+//      "address": "some chat adress ...",
+//      "title": "Wow! Skype is not dead yeat?",
+//      "subTitle": "Or its a bad joke?",
+//      "textLines": [
+//        "one",
+//        "two"
+//      ],
+//      "buttons": [
+//        {
+//          "text": "one",
+//          "url": "http://one"
+//        }, {
+//          "text": "two",
+//          "url": "http://two"
+//        }
+//      ]
+//    }
 server.post('/message', (req, res, next) => {
-    sendCustomCard(req.title, req.subTitle, req.textLines, req.buttons);
+    sendCustomCard(req.address, req.title, req.subTitle, req.textLines, req.buttons);
     res.send(200);
     next();
 });
 
-function sendCustomCard(title, subtitle, textLines, buttons) {
+function sendCustomCard(address, title, subtitle, textLines, buttons) {
     const message = new builder.Message()
                     .address(address);
 
