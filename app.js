@@ -119,7 +119,7 @@ server.post('/message', (req, res, next) => {
 });
 
 function sendCustomCard(address, title, subtitle, textLines, buttons) {
-    const message = new builder.Message().address(address);
+    const message = new builder.Message().address(address).text('...');
 
     bot.loadSession(address, (error, session) => {
         if (exists(error)) {
@@ -135,9 +135,9 @@ function sendCustomCard(address, title, subtitle, textLines, buttons) {
             }
             message.addAttachment(card);
         }
+        console.log(message);
+        bot.send(message);
     });
-    console.log(message);
-    bot.send(message);
 }
 
 function exists(some) {
