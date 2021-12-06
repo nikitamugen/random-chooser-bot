@@ -116,7 +116,7 @@ server.post('/message', (req, res, next) => {
     if (exists(req.body.buttons)) {
         console.log('exists')
     }
-    //sendCustomCard(req.body.address, req.body.title, req.body.subTitle, req.body.textLines, req.body.buttons);
+    sendCustomCard(req.body.address, req.body.title, req.body.subTitle, req.body.textLines, req.body.buttons);
     res.send(200);
     next();
 });
