@@ -116,24 +116,26 @@ server.post('/message', (req, res, next) => {
 });
 
 function sendCustomCard(address, title, subtitle, textLines, buttons) {
-    const message = new builder.Message()
-                    .address(address);
+    console.log(address)
+    console.log(JSON.stringify(address))
 
-    return bot.loadSession(address, (error, session) => {
-    		if (exists(error)) {
-    			message.text(error);
-    		} else {
-    			const card = new builder.HeroCard(session)
-    			             .title(title)
-    			             .subtitle(subtitle)
-    			             .text(textLines.join('\n'));
+    const message = new builder.Message().address(address);
 
-    			if (exists(buttons)) {
-    			    card.buttons = buttons.map((b => builder.CardAction.openUrl(session, b.text, b.url)));
-    			}
-    			message.addAttachment(card);
-    		}
-    	});
+    bot.loadSession(address, (error, session) => {
+        if (exists(error)) {
+            message.text(error);
+        } else {
+            const card = new builder.HeroCard(session)
+                         .title(title)
+                         .subtitle(subtitle)
+                         .text(textLines.join('\n'));
+
+            if (exists(buttons)) {
+                card.buttons = buttons.map((b => builder.CardAction.openUrl(session, b.text, b.url)));
+            }
+            message.addAttachment(card);
+        }
+    });
 
     bot.send(message);
 }
