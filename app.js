@@ -130,26 +130,35 @@ server.post('/message', (req, res, next) => {
 });
 
 function sendCustomCard(address, title, subtitle, textLines, cardLines, buttons) {
-    const message = new builder.Message()
-                               .address(address)
-                               .text(textLines.join('\n'));
+    const message = new builder.Message().address(address);
 
-    bot.loadSession(address, (error, session) => {
-        if (exists(error)) {
-            message.text(error);
-        } else {
-            const card = new builder.HeroCard(session)
-                                    .title(title)
-                                    .subtitle(subtitle)
-                                    .text(cardLines.join('\n'));
+    if (exists(textLines)) {
+        message.text(textLines.join('\n'));
+    }
 
-            if (exists(buttons)) {
-                card.buttons = buttons.map(b => builder.CardAction.openUrl(session, b.url, b.text).type('OpenUrl'));
+    if (exists(title) || exists(subTitle) || exists(cardLines) || exists(buttons)) {
+        bot.loadSession(address, (error, session) => {
+            if (exists(error)) {
+                message.text(error);
+            } else {
+                const card = new builder.HeroCard(session)
+                                        .title(title)
+                                        .subtitle(subtitle);
+
+                if (exists(cardLines)) {
+                    card.text(cardLines.join('\n'));
+                }
+
+                if (exists(buttons)) {
+                    card.buttons(buttons.map(b => builder.CardAction.openUrl(session, b.url, b.text)));
+                }
+                message.addAttachment(card);
             }
-            message.addAttachment(card);
-        }
+            bot.send(message);
+        });
+    } else {
         bot.send(message);
-    });
+    }
 }
 
 function exists(some) {
