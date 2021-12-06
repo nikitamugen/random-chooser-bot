@@ -113,7 +113,10 @@ setInterval(function() {
 server.post('/message', (req, res, next) => {
     console.log(req.body)
 
-    sendCustomCard(req.body.address, req.body.title, req.body.subTitle, req.body.textLines, req.body.buttons);
+    if (exists(req.body.buttons)) {
+        console.log('exists')
+    }
+    //sendCustomCard(req.body.address, req.body.title, req.body.subTitle, req.body.textLines, req.body.buttons);
     res.send(200);
     next();
 });
@@ -131,7 +134,8 @@ function sendCustomCard(address, title, subtitle, textLines, buttons) {
                          .text(textLines.join('\n'));
 
             if (exists(buttons)) {
-                card.buttons = buttons.map(b => builder.CardAction.openUrl(session, b.text, b.url));
+                card.buttons = buttons.map(b => builder.CardAction.openUrl(session, b.url, b.text));
+                console.log(card.buttons)
             }
             message.addAttachment(card);
         }
