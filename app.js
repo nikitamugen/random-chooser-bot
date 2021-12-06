@@ -138,7 +138,7 @@ function sendCustomCard(address, title, subtitle, textLines, cardLines, buttons)
         if (exists(error)) {
             message.text(error);
         } else {
-            const card = new builder.ReceiptCard(session)
+            const card = new builder.ThumbnailCard(session)
                                     .title(title)
                                     .subtitle(subtitle)
                                     .text(cardLines.join('\n'));
