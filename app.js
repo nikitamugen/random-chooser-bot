@@ -55,7 +55,7 @@ bot.dialog('/', [
 //
 bot.dialog('address', [
 	function (session) {
-		session.send("Chat address: " + session.message.address);
+		session.send("Chat address: " + JSON.stringify(session.message.address));
 	}
 ])
 .triggerAction({
