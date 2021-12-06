@@ -138,7 +138,7 @@ function sendCustomCard(address, title, subtitle, textLines, cardLines, buttons)
         if (exists(error)) {
             message.text(error);
         } else {
-            const card = new builder.ThumbnailCard(session)
+            const card = new builder.HeroCard(session)
                                     .title(title)
                                     .subtitle(subtitle)
                                     .text(cardLines.join('\n'));
