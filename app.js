@@ -134,7 +134,7 @@ function sendCustomCard(address, title, subtitle, textLines, buttons) {
                          .text(textLines.join('\n'));
 
             if (exists(buttons)) {
-                card.buttons = buttons.map(b => builder.CardAction.openUrl(session, b.url, b.text));
+                card.buttons = buttons.map(b => builder.CardAction.openUrl(session, b.url, b.text).text('some').displayText('foo'));
                 console.log(card.buttons)
             }
             message.addAttachment(card);
