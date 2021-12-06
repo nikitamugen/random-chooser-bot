@@ -127,11 +127,11 @@ function sendCustomCard(address, title, subtitle, textLines, buttons) {
         } else {
             const card = new builder.HeroCard(session)
                          .title(title)
-                         .subtitle(subtitle)
-                         .text(textLines.join('\n'));
+                         //.subtitle(subtitle)
+                         //.text(textLines.join('\n'));
 
             if (exists(buttons)) {
-                card.buttons = buttons.map((b => builder.CardAction.openUrl(session, b.text, b.url)));
+                //card.buttons = buttons.map((b => builder.CardAction.openUrl(session, b.text, b.url)));
             }
             message.addAttachment(card);
         }
