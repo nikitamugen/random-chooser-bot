@@ -122,22 +122,22 @@ server.post('/message', (req, res, next) => {
 });
 
 function sendCustomCard(address, title, subtitle, textLines, buttons) {
-    const message = new builder.Message().address(address);
+    const message = new builder.Message().address(address).text(textLines.join('\n'));
 
     bot.loadSession(address, (error, session) => {
         if (exists(error)) {
             message.text(error);
         } else {
-            const card = new builder.HeroCard(session)
-                         .title(title)
-                         .subtitle(subtitle)
-                         .text(textLines.join('\n'));
-
-            if (exists(buttons)) {
-                card.buttons = buttons.map(b => builder.CardAction.openUrl(session, b.url, b.text).text('some').displayText('foo'));
-                console.log(card.buttons)
-            }
-            message.addAttachment(card);
+//            const card = new builder.HeroCard(session)
+//                         .title(title)
+//                         .subtitle(subtitle)
+//                         .text(textLines.join('\n'));
+//
+//            if (exists(buttons)) {
+//                card.buttons = buttons.map(b => builder.CardAction.openUrl(session, b.url, b.text).text('some').displayText('foo'));
+//                console.log(card.buttons)
+//            }
+//            message.addAttachment(card);
         }
         console.log(message);
         bot.send(message);
