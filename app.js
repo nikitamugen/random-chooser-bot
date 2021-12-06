@@ -110,13 +110,15 @@ setInterval(function() {
 //      ]
 //    }
 server.post('/message', (req, res, next) => {
-    const jsonBody = JSON.parse(req.body);
-    console.log(jsonBody)
-    console.log(JSON.stringify(jsonBody))
+    console.log(req)
 
-    sendCustomCard(jsonBody.address, jsonBody.title, jsonBody.subTitle, jsonBody.textLines, jsonBody.buttons);
-    res.send(200);
-    next();
+//    const jsonBody = JSON.parse(req.body);
+//    console.log(jsonBody)
+//    console.log(JSON.stringify(jsonBody))
+//
+//    sendCustomCard(jsonBody.address, jsonBody.title, jsonBody.subTitle, jsonBody.textLines, jsonBody.buttons);
+//    res.send(200);
+//    next();
 });
 
 function sendCustomCard(address, title, subtitle, textLines, buttons) {
