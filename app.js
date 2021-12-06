@@ -136,7 +136,7 @@ function sendCustomCard(address, title, subtitle, textLines, buttons) {
             message.addAttachment(card);
         }
     });
-
+    console.log(message);
     bot.send(message);
 }
 
