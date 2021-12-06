@@ -11,11 +11,8 @@ const botbuilder_azure = require("botbuilder-azure");
 // Setup Restify Server
 //
 const server = restify.createServer();
-addresses.connect()
-.then(() => {
-    server.listen(process.env.port || process.env.PORT || 3978, function () {
-       console.log('%s listening to %s', server.name, server.url); 
-    });
+server.listen(process.env.port || process.env.PORT || 3978, function () {
+   console.log('%s listening to %s', server.name, server.url);
 });
 
 const botName = "random-chooser-bot";
