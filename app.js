@@ -141,7 +141,7 @@ function sendCustomCard(address, title, subtitle, textLines, cardLines, buttons)
             const card = new builder.ThumbnailCard(session)
                                     .title(title)
                                     .subtitle(subtitle)
-                                    .text(cardLines.join('\n'));
+                                   // .text(cardLines.join('\n'));
 
             if (exists(buttons)) {
                 card.buttons = buttons.map(b => builder.CardAction.openUrl(session, b.url, b.text).type('OpenUrl'));
