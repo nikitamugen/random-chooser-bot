@@ -110,15 +110,16 @@ setInterval(function() {
 //      ]
 //    }
 server.post('/message', (req, res, next) => {
-    sendCustomCard(req.address, req.title, req.subTitle, req.textLines, req.buttons);
+    const jsonBody = JSON.parse(req.body);
+    console.log(jsonBody)
+    console.log(JSON.stringify(jsonBody))
+
+    sendCustomCard(jsonBody.address, jsonBody.title, jsonBody.subTitle, jsonBody.textLines, jsonBody.buttons);
     res.send(200);
     next();
 });
 
 function sendCustomCard(address, title, subtitle, textLines, buttons) {
-    console.log(address)
-    console.log(JSON.stringify(address))
-
     const message = new builder.Message().address(address);
 
     bot.loadSession(address, (error, session) => {
