@@ -14,6 +14,7 @@ const server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
    console.log('%s listening to %s', server.name, server.url);
 });
+server.use(restify.plugins.bodyParser());
 
 const botName = "random-chooser-bot";
 
@@ -110,15 +111,11 @@ setInterval(function() {
 //      ]
 //    }
 server.post('/message', (req, res, next) => {
-    console.log(req)
+    console.log(req.body)
 
-//    const jsonBody = JSON.parse(req.body);
-//    console.log(jsonBody)
-//    console.log(JSON.stringify(jsonBody))
-//
-//    sendCustomCard(jsonBody.address, jsonBody.title, jsonBody.subTitle, jsonBody.textLines, jsonBody.buttons);
-//    res.send(200);
-//    next();
+    sendCustomCard(req.body.address, req.body.title, req.body.subTitle, req.body.textLines, req.body.buttons);
+    res.send(200);
+    next();
 });
 
 function sendCustomCard(address, title, subtitle, textLines, buttons) {
