@@ -6,14 +6,11 @@
   "scripts": {
     "start": "node app.js",
     "dev": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "azure-publish": "node publish.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "assert": "^1.4.1",
-    "axios": "^0.17.1",
     "botbuilder": "^3.13.1",
     "botbuilder-azure": "^3.0.4",
     "eventsource": "^1.0.5",
