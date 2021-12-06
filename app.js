@@ -119,7 +119,7 @@ server.post('/message', (req, res, next) => {
 });
 
 function sendCustomCard(address, title, subtitle, textLines, buttons) {
-    const message = new builder.Message().address(address).text('...');
+    const message = new builder.Message().address(address);
 
     bot.loadSession(address, (error, session) => {
         if (exists(error)) {
@@ -131,7 +131,7 @@ function sendCustomCard(address, title, subtitle, textLines, buttons) {
                          .text(textLines.join('\n'));
 
             if (exists(buttons)) {
-                card.buttons = buttons.map((b => builder.CardAction.openUrl(session, b.text, b.url)));
+                card.buttons = buttons.map(b => builder.CardAction.openUrl(session, b.text, b.url));
             }
             message.addAttachment(card);
         }
