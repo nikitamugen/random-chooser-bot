@@ -117,6 +117,7 @@ setInterval(function() {
 //      ]
 //    }
 server.post('/message', (req, res, next) => {
+    console.log(req.body);
     sendCustomCard(
         req.body.address,
         req.body.title,
