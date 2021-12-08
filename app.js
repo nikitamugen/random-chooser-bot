@@ -130,7 +130,7 @@ server.post('/message', (req, res, next) => {
     next();
 });
 
-function sendCustomCard(address, title, subtitle, textLines, cardLines, buttons) {
+function sendCustomCard(address, title, subTitle, textLines, cardLines, buttons) {
     const message = new builder.Message().address(address);
 
     if (exists(textLines)) {
@@ -144,7 +144,7 @@ function sendCustomCard(address, title, subtitle, textLines, cardLines, buttons)
             } else {
                 const card = new builder.HeroCard(session)
                                         .title(title)
-                                        .subtitle(subtitle);
+                                        .subtitle(subTitle);
 
                 if (exists(cardLines)) {
                     card.text(cardLines.join('\n'));
