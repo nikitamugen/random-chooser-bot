@@ -73,8 +73,6 @@ server.get('/ping', (req, res, next) => {
 // - subTitle - optional subtitle
 // - textLines - optional array ot text lines for primary message.
 //   Like: ['one', 'two'] - is "one\ntwo"
-// - cardLines - optional array ot text lines for card message.
-//   Like: ['one', 'two'] - is "one\ntwo"
 // - buttons - array of clickable urls for card.
 //   Like: [{'text': 'one', url: 'http://one'}, {'text': 'two', 'url': 'http://two'}]
 //
@@ -86,10 +84,6 @@ server.get('/ping', (req, res, next) => {
 //      "textLines": [
 //        "one",
 //        "two"
-//      ],
-//      "cardLines": [
-//        "three",
-//        "four"
 //      ],
 //      "buttons": [
 //        {
@@ -109,7 +103,6 @@ server.post('/message', async (req, res) => {
             req.body.title,
             req.body.subTitle,
             req.body.textLines,
-            req.body.cardLines,
             req.body.buttons
         );
         res.send(200);

@@ -1,4 +1,4 @@
-const { ActivityHandler, TurnContext } = require('botbuilder');
+const { ActivityHandler, TurnContext, CardFactory } = require('botbuilder');
 
 const fs = require('fs');
 const DATA_FILE = 'data/conversations.data';
@@ -75,7 +75,33 @@ class ProactiveBot extends ActivityHandler {
     return {};
   }
 
-  async send(conversationId, title, subTitle, textLines, cardLines, buttons) {
+  createHeroCard(title, subTitle, textLines, buttons) {
+    let text = '';
+    if (hasLength(textLines)) {
+      textLines.forEach(line => text += `\n${line}`);
+    }
+    if (hasLength(subTitle)) {
+      text = `*${subTitle}*\n${text}`;
+    }
+    let actions = [];
+    if (hasLength(buttons)) {
+      buttons.forEach(button => actions.push(
+          {
+            type: 'openUrl',
+            title: button.text,
+            value: button.url,
+          }
+      ));
+    }
+    return CardFactory.heroCard(
+        title,
+        text,
+        [],
+        CardFactory.actions(actions),
+    );
+  }
+
+  async send(conversationId, title, subTitle, textLines, buttons) {
     if (!this.conversationReferences.hasOwnProperty(conversationId)) {
       throw `unknown conversation id: '${conversationId}'`
     }
@@ -84,10 +110,18 @@ class ProactiveBot extends ActivityHandler {
         process.env.MicrosoftAppId,
         this.conversationReferences[conversationId],
         async context => {
-          await context.sendActivity(title);
+          await context.sendActivity(this.createHeroCard(title, subTitle, textLines, buttons));
         }
     );
   }
+}
+
+function exists(some) {
+  return (some !== null && some !== undefined);
+}
+
+function hasLength(arrayOrString) {
+  return (exists(arrayOrString) && (arrayOrString.length > 0));
 }
 
 module.exports.ProactiveBot = ProactiveBot;
