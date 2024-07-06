@@ -16,10 +16,30 @@ const builder = require('botbuilder');
 const authentication = new builder.ConfigurationBotFrameworkAuthentication(process.env);
 const adapter = new builder.CloudAdapter(authentication);
 
+// Catch-all for errors.
+adapter.onTurnError = async (context, error) => {
+    // This check writes out errors to console log .vs. app insights.
+    // NOTE: In production environment, you should consider logging this to Azure
+    //       application insights. See https://aka.ms/bottelemetry for telemetry
+    //       configuration instructions.
+    console.error(`\n [onTurnError] unhandled error: ${ error }`);
+
+    // Send a trace activity, which will be displayed in Bot Framework Emulator
+    await context.sendTraceActivity(
+        'OnTurnError Trace',
+        `${ error }`,
+        'https://www.botframework.com/schemas/error',
+        'TurnError'
+    );
+
+    // Send a message to the user
+    await context.sendActivity('The bot encountered an error or bug.');
+    await context.sendActivity('To continue to run this bot, please fix the bot source code.');
+};
+
 // This bot's main dialog.
 const { ProactiveBot } = require('./bot/proactive-bot');
-const conversationReferences = {};
-const bot = new ProactiveBot(conversationReferences, adapter);
+const bot = new ProactiveBot(adapter);
 
 // Setup Restify Server
 //

@@ -1,12 +1,14 @@
 const { ActivityHandler, TurnContext } = require('botbuilder');
 
+const fs = require('fs');
+const DATA_FILE = 'data/conversations.data';
+
 class ProactiveBot extends ActivityHandler {
-  constructor(conversationReferences, adapter) {
+  constructor(adapter) {
     super();
 
-    this.conversationReferences = conversationReferences;
+    this.conversationReferences = this.loadConversationsFromDisk();
     this.adapter = adapter;
-    console.log(conversationReferences);
 
     this.onConversationUpdate(async (context, next) => {
       this.addConversationReference(context.activity);
@@ -43,8 +45,34 @@ class ProactiveBot extends ActivityHandler {
   }
 
   addConversationReference(activity) {
+    console.log(`Added new conversation:`, activity)
+
     const conversationReference = TurnContext.getConversationReference(activity);
     this.conversationReferences[conversationReference.conversation.id] = conversationReference;
+
+    this.saveConversationsOnDisk();
+  }
+
+  saveConversationsOnDisk() {
+    console.log('* Save conversations on disk ...')
+    fs.writeFile(DATA_FILE, JSON.stringify(this.conversationReferences), (err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(" - File written successfully.");
+      }
+    });
+  }
+
+  loadConversationsFromDisk() {
+    if (fs.existsSync(DATA_FILE)) {
+      const dataText = fs.readFileSync(DATA_FILE, "utf8")
+      const dataObj = JSON.parse(dataText);
+      console.log('* Loaded conversations: ', this.conversationReferences);
+      return dataObj;
+    }
+    console.log('* Init default conversations {}');
+    return {};
   }
 
   async send(conversationId, title, subTitle, textLines, cardLines, buttons) {
