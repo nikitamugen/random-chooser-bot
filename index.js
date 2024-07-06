@@ -100,7 +100,7 @@ server.post('/message', async (req, res) => {
     try {
         await bot.send(
             req.body.address,
-            req.body
+            req.body.card
         );
         res.send(200);
     } catch (e) {
