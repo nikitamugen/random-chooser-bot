@@ -45,12 +45,12 @@ class ProactiveBot extends ActivityHandler {
   }
 
   addConversationReference(activity) {
-    console.log(`Added new conversation:`, activity)
-
     const conversationReference = TurnContext.getConversationReference(activity);
-    this.conversationReferences[conversationReference.conversation.id] = conversationReference;
-
-    this.saveConversationsOnDisk();
+    if (!this.conversationReferences.hasOwnProperty(conversationReference.conversation.id)) {
+      this.conversationReferences[conversationReference.conversation.id] = conversationReference;
+      console.log(`Added new conversation:`, conversationReference)
+      this.saveConversationsOnDisk();
+    }
   }
 
   saveConversationsOnDisk() {
