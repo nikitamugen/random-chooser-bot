@@ -68,7 +68,7 @@ class ProactiveBot extends ActivityHandler {
     if (fs.existsSync(DATA_FILE)) {
       const dataText = fs.readFileSync(DATA_FILE, "utf8")
       const dataObj = JSON.parse(dataText);
-      console.log('* Loaded conversations: ', this.conversationReferences);
+      console.log('* Loaded conversations: ', dataObj);
       return dataObj;
     }
     console.log('* Init default conversations {}');
