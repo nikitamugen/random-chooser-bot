@@ -75,33 +75,18 @@ class ProactiveBot extends ActivityHandler {
     return {};
   }
 
-  createHeroCard(title, subTitle, textLines, buttons) {
-    let text = '';
-    if (hasLength(textLines)) {
-      textLines.forEach(line => text += `\n${line}`);
-    }
-    if (hasLength(subTitle)) {
-      text = `*${subTitle}*\n${text}`;
-    }
-    let actions = [];
-    if (hasLength(buttons)) {
-      buttons.forEach(button => actions.push(
-          {
-            type: 'openUrl',
-            title: button.text,
-            value: button.url,
-          }
-      ));
-    }
-    return CardFactory.heroCard(
-        title,
-        text,
-        [],
-        CardFactory.actions(actions),
+  createAdaptiveCard(body) {
+    return CardFactory.adaptiveCard(
+        {
+          "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+          "version": "1.0",
+          "type": "AdaptiveCard",
+          body
+        }
     );
   }
 
-  async send(conversationId, title, subTitle, textLines, buttons) {
+  async send(conversationId, body) {
     if (!this.conversationReferences.hasOwnProperty(conversationId)) {
       throw `unknown conversation id: '${conversationId}'`
     }
@@ -113,21 +98,13 @@ class ProactiveBot extends ActivityHandler {
           await context.sendActivity(
               {
                 attachments: [
-                  this.createHeroCard(title, subTitle, textLines, buttons)
+                  this.createAdaptiveCard(body)
                 ],
                 attachmentLayout: AttachmentLayoutTypes.Carousel
               })
         }
     );
   }
-}
-
-function exists(some) {
-  return (some !== null && some !== undefined);
-}
-
-function hasLength(arrayOrString) {
-  return (exists(arrayOrString) && (arrayOrString.length > 0));
 }
 
 module.exports.ProactiveBot = ProactiveBot;
