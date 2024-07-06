@@ -110,7 +110,13 @@ class ProactiveBot extends ActivityHandler {
         process.env.MicrosoftAppId,
         this.conversationReferences[conversationId],
         async context => {
-          await context.sendActivity(this.createHeroCard(title, subTitle, textLines, buttons));
+          await context.sendActivity(
+              {
+                attachments: [
+                  this.createHeroCard(title, subTitle, textLines, buttons)
+                ],
+                attachmentLayout: AttachmentLayoutTypes.Carousel
+              })
         }
     );
   }
