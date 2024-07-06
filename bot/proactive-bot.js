@@ -1,4 +1,4 @@
-const { ActivityHandler, TurnContext, CardFactory } = require('botbuilder');
+const { ActivityHandler, TurnContext, CardFactory, AttachmentLayoutTypes } = require('botbuilder');
 
 const fs = require('fs');
 const DATA_FILE = 'data/conversations.data';
